@@ -1,40 +1,32 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
-
-on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pname: Deploy to IIS Server
+name: Deploy with SSH
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Check out the code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Static Files
+      # Step 2: Configure SSH
+      - name: Configure SSH
         run: |
-          mkdir -p public
-          echo "<html><body><h1>Hello from IIS!</h1></body></html>" > public/index.html
-
-      - name: Deploy to IIS Server
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          echo "${SSH_KEY}" > ~/.ssh/id_rsa
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -r public/* desktop-kf3loac\aniket@192.168.1.16:/C:\inetpub\wwwroot\testfile
 
+      # Step 3: Add known hosts (e.g., your server's host key)
+      - name: Add to Known Hosts
+        run: |
+          ssh-keyscan -H your-server.com >> ~/.ssh/known_hosts
+
+      # Step 4: Deploy files to IIS server using SCP
+      - name: Deploy to IIS Server
+        run: |
+          scp -r ./your-site-files/ desktop-kf3loac\aniket@192.168.1.16:/C:\inetpub\wwwroot\testfile
