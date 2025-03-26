@@ -18,24 +18,37 @@ jobs:
       - name: Debug Connectivity
         run: |
           echo "Testing server connectivity..."
-          timeout 5 ping -c 4 192.168.1.16 || echo "Ping failed"
-          timeout 5 nc -zv 192.168.1.16 22 || echo "Port 22 not accessible"
+          ping -c 4 192.168.1.16 || echo "Ping failed"
+          nc -zv 192.168.1.16 22 || echo "Port 22 not accessible"
           echo "All debug commands executed."
 
-      # Step 3: Configure SSH
+      # Step 3: Prepare SSH Directory
+      - name: Prepare SSH Directory
+        run: |
+          echo "Ensuring ~/.ssh directory and known_hosts file exist..."
+          mkdir -p ~/.ssh
+          touch ~/.ssh/known_hosts
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/known_hosts
+          echo "SSH directory and file permissions set."
+
+      # Step 4: Debug SSH Keyscan
+      - name: Add SSH Host Key
+        run: |
+          echo "Fetching the host key from 192.168.1.16..."
+          ssh-keyscan -H 192.168.1.16 >> ~/.ssh/known_hosts
+          echo "Host key added to known_hosts."
+
+      # Step 5: Configure SSH Key
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # Step 4: Add SSH Host Key
-      - name: Add SSH Host Key
-        run: |
-          ssh-keyscan -H 192.168.1.16 >> ~/.ssh/known_hosts
-
-      # Step 5: Deploy files to IIS Server using SCP
+      # Step 6: Deploy files to IIS Server using SCP
       - name: Deploy to IIS Server
         run: |
           scp -r ./your-site-files/ desktop-kf3loac@192.168.1.16:/C/inetpub/wwwroot/TESTING
+
 
