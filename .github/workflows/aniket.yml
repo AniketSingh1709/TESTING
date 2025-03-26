@@ -41,4 +41,4 @@ jobs:
       # Step 4: Deploy files to IIS server using SCP
       - name: Deploy to IIS Server
         run: |
-          scp -r ./your-site-files/ desktop-kf3loac\aniket@192.168.1.16:/C:\inetpub\wwwroot\TESTING
+          scp -r ./your-site-files/ desktop-kf3loac\aniket@192.168.1.16:/C/inetpub/wwwroot/TESTING
